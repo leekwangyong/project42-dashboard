@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project42 Dashboard · 프로젝트42 대시보드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+  :root{
+    --ink:#16191f;
+    --ink-2:#454b57;
+    --ink-3:#727885;
+    --ink-4:#a4a9b3;
+    --line:#e9ebef;
+    --line-2:#f3f4f6;
+    --bg:#fbfbfc;
+    --card:#ffffff;
+    --brand:#3f48cc;
+    --brand-2:#2d35a8;
+    --brand-soft:#eef0fc;
+    --kw:#9a5b13;
+    --kw-soft:#fbf2e4;
+    --danger:#c4362f;
+    --danger-soft:#fbeceb;
+    --ok:#2f7a52;
+    --ok-soft:#eaf4ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'IBM Plex Sans KR',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+    letter-spacing:-0.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1140px;margin:0 auto;padding:32px 24px 64px}
+
+  /* Header */
+  header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:26px;flex-wrap:wrap;gap:14px}
+  .brand h1{font-size:21px;font-weight:600;letter-spacing:-0.03em;display:flex;align-items:center;gap:10px;color:var(--ink)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+  .brand p{font-size:13px;color:var(--ink-3);margin-top:6px;font-weight:400}
+  .sync{font-size:12px;color:var(--ink-4);text-align:right;line-height:1.7}
+  .sync b{color:var(--ink-2);font-weight:500}
+
+  /* Stat strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:24px}
+  .stat{background:var(--card);padding:18px 20px}
+  .stat .label{font-size:12px;color:var(--ink-3);font-weight:500}
+  .stat .num{font-size:28px;font-weight:600;letter-spacing:-0.04em;margin-top:9px;line-height:1;font-variant-numeric:tabular-nums}
+  .stat .sub{font-size:11.5px;color:var(--ink-4);margin-top:8px;font-weight:400}
+  .stat .num.kw{color:var(--kw)}
+  .stat .num.warn{color:var(--danger)}
+
+  /* Keyword bar */
+  .kwbar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin-bottom:16px}
+  .kwbar .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .kwbar .top .ttl{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .kwbar .top .ttl .mk{width:14px;height:14px;border-radius:4px;background:var(--kw-soft);color:var(--kw);font-size:10px;display:grid;place-items:center;font-weight:700}
+  .kwbar .top .hint{font-size:12px;color:var(--ink-4)}
+  .kwlist{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .kw{display:inline-flex;align-items:center;gap:7px;background:var(--kw-soft);color:var(--kw);font-size:12.5px;font-weight:500;padding:6px 7px 6px 12px;border-radius:7px;border:1px solid transparent;transition:.13s}
+  .kw .lab{cursor:pointer}
+  .kw.off{background:var(--line-2);color:var(--ink-4);text-decoration:line-through}
+  .kw .x{width:16px;height:16px;border-radius:4px;display:grid;place-items:center;background:rgba(0,0,0,.05);cursor:pointer;font-size:11px;color:inherit}
+  .kw .x:hover{background:rgba(0,0,0,.13)}
+  .kwadd{display:inline-flex;gap:6px}
+  .kwadd input{border:1px dashed var(--line);border-radius:7px;padding:6px 11px;font-family:inherit;font-size:12.5px;width:120px;background:var(--bg);color:var(--ink)}
+  .kwadd input:focus{outline:none;border-color:var(--brand);border-style:solid;background:#fff}
+  .kwadd button{border:none;background:var(--ink);color:#fff;font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 12px;border-radius:7px;cursor:pointer}
+  .kwadd button:hover{background:var(--ink-2)}
+  .kwbar .foot{margin-top:12px;font-size:11.5px;color:var(--ink-4);display:flex;align-items:center;gap:7px}
+  .kwbar .foot label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .kwbar .foot input{accent-color:var(--brand)}
+
+  /* Controls */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 13px 10px 36px;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--card)}
+  .search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-4)}
+  select{border:1px solid var(--line);border-radius:9px;padding:10px 13px;font-family:inherit;font-size:13px;color:var(--ink-2);background:var(--card);cursor:pointer}
+  select:focus{outline:none;border-color:var(--brand)}
+
+  /* Table */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .panel-head h2{font-size:14px;font-weight:600}
+  .panel-head .count{font-size:12px;color:var(--ink-4);font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:11.5px;font-weight:600;color:var(--ink-3);text-align:left;padding:11px 18px;background:var(--bg);border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;letter-spacing:0}
+  th:hover{color:var(--brand)}
+  th .arrow{font-size:8px;margin-left:4px;color:var(--brand)}
+  td{padding:15px 18px;font-size:13.5px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tbody tr{transition:background .1s;cursor:pointer}
+  tbody tr:hover{background:var(--bg)}
+  tbody tr.km td:first-child{box-shadow:inset 3px 0 0 var(--kw)}
+  .tc{max-width:380px}
+  .tc .nm{font-weight:500;color:var(--ink);line-height:1.4}
+  .tc .nm mark{background:var(--kw-soft);color:var(--kw);padding:0 3px;border-radius:3px;font-weight:600}
+  .tc .org{font-size:12px;color:var(--ink-4);margin-top:4px}
+  .tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;margin-right:5px;vertical-align:1px;letter-spacing:0}
+  .tag-new{background:var(--brand-soft);color:var(--brand-2)}
+  .tag-kw{background:var(--kw-soft);color:var(--kw)}
+  .amt{font-variant-numeric:tabular-nums;font-weight:500;color:var(--ink-2);white-space:nowrap}
+  .dt{color:var(--ink-3);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .dd{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dd .led{width:6px;height:6px;border-radius:50%}
+  .dd.hot{color:var(--danger)}.dd.hot .led{background:var(--danger)}
+  .dd.warn{color:var(--kw)}.dd.warn .led{background:var(--kw)}
+  .dd.ok{color:var(--ink-3)}.dd.ok .led{background:var(--ink-4)}
+  .empty{padding:54px;text-align:center;color:var(--ink-4);font-size:13.5px}
+
+  .foot{margin-top:16px;font-size:11.5px;color:var(--ink-4);text-align:center;line-height:1.8}
+  .foot b{color:var(--ink-3);font-weight:500}
+
+  @media(max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .hide-sm{display:none}
+    .tc{max-width:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1><span class="dot"></span>Project42 Dashboard</h1>
+      <p>프로젝트42 대시보드 · 관심 키워드 기반 나라장터 용역 공고 추적</p>
+    </div>
+    <div class="sync">
+      마지막 수집 <b id="syncTime">__SYNCTIME__</b><br>
+      자동 갱신 <b>1시간</b> 주기
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="label">키워드 일치</div>
+      <div class="num kw" id="stKw">—</div>
+      <div class="sub">관심 키워드 포함 공고</div>
+    </div>
+    <div class="stat">
+      <div class="label">오늘 신규</div>
+      <div class="num" id="stNew">—</div>
+      <div class="sub">금일 게시 공고</div>
+    </div>
+    <div class="stat">
+      <div class="label">마감 임박</div>
+      <div class="num warn" id="stSoon">—</div>
+      <div class="sub">3일 이내 마감</div>
+    </div>
+    <div class="stat">
+      <div class="label">추적 중 전체</div>
+      <div class="num" id="stTotal">—</div>
+      <div class="sub">진행 중 용역 공고</div>
+    </div>
+  </div>
+
+  <div class="kwbar">
+    <div class="top">
+      <span class="ttl"><span class="mk">★</span>관심 키워드</span>
+      <span class="hint">키워드를 클릭해 켜고 끄기 · ✕ 로 삭제 · 일치 공고는 자동 강조</span>
+    </div>
+    <div class="kwlist" id="kwList"></div>
+    <div class="foot">
+      <label><input type="checkbox" id="kwOnly"> 키워드 일치 공고만 보기</label>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="공고명 · 발주기관 검색">
+    </div>
+    <select id="orgFilter"><option value="">전체 발주기관</option></select>
+    <select id="amtFilter">
+      <option value="">전체 금액</option>
+      <option value="0-100000000">1억 미만</option>
+      <option value="100000000-500000000">1억 ~ 5억</option>
+      <option value="500000000-999999999999">5억 이상</option>
+    </select>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>용역 입찰공고</h2>
+      <span class="count" id="resultCount"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="title">공고명 / 발주기관</th>
+          <th data-sort="amount">추정금액</th>
+          <th data-sort="postDate" class="hide-sm">공고일</th>
+          <th data-sort="dday">마감 <span class="arrow">▼</span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none">조건에 맞는 공고가 없습니다.</div>
+  </div>
+
+  <div class="foot">
+    나라장터 공공데이터 기반 · 매일 자동 갱신 · 공고 클릭 시 나라장터 상세로 이동
+  </div>
+</div>
+
+<script>
+const today=new Date();
+const fmt=d=>`${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`;
+const addDays=(b,n)=>{const d=new Date(b);d.setDate(d.getDate()+n);return d;};
+
+let keywords=[
+  {word:'아트',on:true},{word:'전시',on:true},{word:'개발',on:true},
+  {word:'미디어',on:true},{word:'콘텐츠',on:true},{word:'디자인',on:true},
+];
+
+const RAW=__DATA__;
+
+const data=RAW.map((r,i)=>{
+  const pd=new Date(r.postDate+"T00:00:00");
+  const po=Math.round((pd-new Date(today.getFullYear(),today.getMonth(),today.getDate()))/86400000);
+  return{id:i,title:r.title,org:r.org,amount:r.amount,postDate:pd,po,dday:r.dday,isNew:po===0,url:r.url||"https://www.g2b.go.kr"};});
+
+const won=n=>n>=100000000?(n/100000000).toFixed(n%100000000===0?0:1).replace(/\.0$/,'')+'억원':(n/10000).toLocaleString()+'만원';
+const dd=d=>d===0?{t:'오늘 마감',c:'hot'}:d<=3?{t:`D-${d}`,c:'warn'}:{t:`D-${d}`,c:'ok'};
+const activeKw=()=>keywords.filter(k=>k.on).map(k=>k.word);
+const matchedKw=d=>activeKw().filter(w=>d.title.includes(w));
+
+let state={q:'',org:'',amt:'',kwOnly:false,sortKey:'dday',sortDir:1};
+
+const orgSel=document.getElementById('orgFilter');
+[...new Set(data.map(d=>d.org))].sort().forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;orgSel.appendChild(op);});
+
+function renderKw(){
+  const box=document.getElementById('kwList');box.innerHTML='';
+  keywords.forEach((k,i)=>{
+    const el=document.createElement('span');
+    el.className='kw '+(k.on?'on':'off');
+    el.innerHTML=`<span class="lab">${k.word}</span><span class="x">✕</span>`;
+    el.querySelector('.lab').onclick=()=>{k.on=!k.on;renderKw();renderStats();render();};
+    el.querySelector('.x').onclick=e=>{e.stopPropagation();keywords.splice(i,1);renderKw();renderStats();render();};
+    box.appendChild(el);
+  });
+  const add=document.createElement('span');add.className='kwadd';
+  add.innerHTML=`<input type="text" id="kwInput" placeholder="키워드 추가" maxlength="20"><button id="kwBtn">추가</button>`;
+  box.appendChild(add);
+  const inp=add.querySelector('#kwInput');
+  const go=()=>{const v=inp.value.trim();if(v&&!keywords.some(k=>k.word===v)){keywords.push({word:v,on:true});renderKw();renderStats();render();}else inp.value='';};
+  add.querySelector('#kwBtn').onclick=go;
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+}
+
+function filtered(){
+  let r=data.filter(d=>{
+    if(state.q){const q=state.q.toLowerCase();if(!d.title.toLowerCase().includes(q)&&!d.org.toLowerCase().includes(q))return false;}
+    if(state.org&&d.org!==state.org)return false;
+    if(state.amt){const[lo,hi]=state.amt.split('-').map(Number);if(d.amount<lo||d.amount>hi)return false;}
+    if(state.kwOnly&&matchedKw(d).length===0)return false;
+    return true;
+  });
+  r.sort((a,b)=>{
+    const am=matchedKw(a).length>0?1:0,bm=matchedKw(b).length>0?1:0;
+    if(am!==bm)return bm-am;
+    let av=a[state.sortKey],bv=b[state.sortKey];
+    if(state.sortKey==='postDate'){av=a.po;bv=b.po;}
+    if(typeof av==='string')return av.localeCompare(bv,'ko')*state.sortDir;
+    return(av-bv)*state.sortDir;
+  });
+  return r;
+}
+
+function hl(t,ws){let o=t;ws.forEach(w=>{o=o.split(w).join(`<mark>${w}</mark>`);});return o;}
+
+function render(){
+  const rows=filtered();const tb=document.getElementById('tbody');
+  document.getElementById('emptyMsg').style.display=rows.length?'none':'block';
+  tb.innerHTML='';
+  rows.forEach(d=>{
+    const D=dd(d.dday),mk=matchedKw(d),tr=document.createElement('tr');
+    if(mk.length)tr.className='km';
+    tr.onclick=()=>window.open(d.url,'_blank');
+    tr.innerHTML=`<td class="tc"><div class="nm">${d.isNew?'<span class="tag tag-new">신규</span>':''}${mk.length?'<span class="tag tag-kw">관심</span>':''}${hl(d.title,mk)}</div><div class="org">${d.org}</div></td>
+      <td class="amt">${won(d.amount)}</td>
+      <td class="hide-sm dt">${fmt(d.postDate)}</td>
+      <td><span class="dd ${D.c}"><span class="led"></span>${D.t}</span></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('resultCount').textContent=`${rows.length}건`;
+}
+
+function renderStats(){
+  document.getElementById('stKw').textContent=data.filter(d=>matchedKw(d).length>0).length;
+  document.getElementById('stNew').textContent=data.filter(d=>d.isNew).length;
+  document.getElementById('stSoon').textContent=data.filter(d=>d.dday<=3&&d.dday>0).length;
+  document.getElementById('stTotal').textContent=data.length;
+}
+
+document.getElementById('searchInput').addEventListener('input',e=>{state.q=e.target.value;render();});
+orgSel.addEventListener('change',e=>{state.org=e.target.value;render();});
+document.getElementById('amtFilter').addEventListener('change',e=>{state.amt=e.target.value;render();});
+document.getElementById('kwOnly').addEventListener('change',e=>{state.kwOnly=e.target.checked;render();});
+document.querySelectorAll('th[data-sort]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k=th.dataset.sort;
+    if(state.sortKey===k)state.sortDir*=-1;else{state.sortKey=k;state.sortDir=1;}
+    document.querySelectorAll('th').forEach(x=>{const a=x.querySelector('.arrow');if(a)a.remove();});
+    const arr=document.createElement('span');arr.className='arrow';arr.textContent=state.sortDir===1?'▲':'▼';th.appendChild(arr);
+    render();
+  });
+});
+
+renderKw();renderStats();render();
+</script>
+</body>
+</html>
