@@ -30,7 +30,7 @@ import requests
 # ============================================================
 
 # 관심 키워드: 공고명에 이 단어가 들어가면 알림 대상
-KEYWORDS = KEYWORDS = ["아트", "전시", "개발", "미디어", "콘텐츠", "디자인", "sns", "마케팅"]
+KEYWORDS = ["아트", "전시", "개발", "미디어", "콘텐츠", "디자인"]
 
 # 한 번에 가져올 공고 수 (최근 공고부터)
 NUM_ROWS = 200
@@ -159,12 +159,15 @@ def build_dashboard(active_items):
             "url": it["url"],
         })
     data_json = json.dumps(rows, ensure_ascii=False)
+    kw_json = json.dumps([{"word": k} for k in KEYWORDS], ensure_ascii=False)
 
     now_kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
     synctime = now_kst.strftime("%m/%d %H:%M")
 
     tpl = open(TEMPLATE_FILE, encoding="utf-8").read()
-    out = tpl.replace("__DATA__", data_json).replace("__SYNCTIME__", synctime)
+    out = (tpl.replace("__DATA__", data_json)
+              .replace("__KEYWORDS__", kw_json)
+              .replace("__SYNCTIME__", synctime))
     open(OUTPUT_HTML, "w", encoding="utf-8").write(out)
     print(f"대시보드 생성 완료: {OUTPUT_HTML} (공고 {len(rows)}건)")
 

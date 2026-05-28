@@ -61,16 +61,7 @@
   .kwbar .top .ttl .mk{width:14px;height:14px;border-radius:4px;background:var(--kw-soft);color:var(--kw);font-size:10px;display:grid;place-items:center;font-weight:700}
   .kwbar .top .hint{font-size:12px;color:var(--ink-4)}
   .kwlist{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-  .kw{display:inline-flex;align-items:center;gap:7px;background:var(--kw-soft);color:var(--kw);font-size:12.5px;font-weight:500;padding:6px 7px 6px 12px;border-radius:7px;border:1px solid transparent;transition:.13s}
-  .kw .lab{cursor:pointer}
-  .kw.off{background:var(--line-2);color:var(--ink-4);text-decoration:line-through}
-  .kw .x{width:16px;height:16px;border-radius:4px;display:grid;place-items:center;background:rgba(0,0,0,.05);cursor:pointer;font-size:11px;color:inherit}
-  .kw .x:hover{background:rgba(0,0,0,.13)}
-  .kwadd{display:inline-flex;gap:6px}
-  .kwadd input{border:1px dashed var(--line);border-radius:7px;padding:6px 11px;font-family:inherit;font-size:12.5px;width:120px;background:var(--bg);color:var(--ink)}
-  .kwadd input:focus{outline:none;border-color:var(--brand);border-style:solid;background:#fff}
-  .kwadd button{border:none;background:var(--ink);color:#fff;font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 12px;border-radius:7px;cursor:pointer}
-  .kwadd button:hover{background:var(--ink-2)}
+  .kw{display:inline-flex;align-items:center;background:var(--kw-soft);color:var(--kw);font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:7px;border:1px solid transparent}
   .kwbar .foot{margin-top:12px;font-size:11.5px;color:var(--ink-4);display:flex;align-items:center;gap:7px}
   .kwbar .foot label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
   .kwbar .foot input{accent-color:var(--brand)}
@@ -163,8 +154,8 @@
 
   <div class="kwbar">
     <div class="top">
-      <span class="ttl"><span class="mk">★</span>관심 키워드</span>
-      <span class="hint">키워드를 클릭해 켜고 끄기 · ✕ 로 삭제 · 일치 공고는 자동 강조</span>
+      <span class="ttl"><span class="mk">★</span>현재 수집 키워드</span>
+      <span class="hint">이 키워드가 포함된 공고를 자동 수집·강조합니다 · 변경은 monitor.py에서</span>
     </div>
     <div class="kwlist" id="kwList"></div>
     <div class="foot">
@@ -215,10 +206,7 @@ const today=new Date();
 const fmt=d=>`${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(b,n)=>{const d=new Date(b);d.setDate(d.getDate()+n);return d;};
 
-let keywords=[
-  {word:'아트',on:true},{word:'전시',on:true},{word:'개발',on:true},
-  {word:'미디어',on:true},{word:'콘텐츠',on:true},{word:'디자인',on:true},
-];
+let keywords=__KEYWORDS__;
 
 const RAW=__DATA__;
 
@@ -229,7 +217,7 @@ const data=RAW.map((r,i)=>{
 
 const won=n=>n>=100000000?(n/100000000).toFixed(n%100000000===0?0:1).replace(/\.0$/,'')+'억원':(n/10000).toLocaleString()+'만원';
 const dd=d=>d===0?{t:'오늘 마감',c:'hot'}:d<=3?{t:`D-${d}`,c:'warn'}:{t:`D-${d}`,c:'ok'};
-const activeKw=()=>keywords.filter(k=>k.on).map(k=>k.word);
+const activeKw=()=>keywords.map(k=>k.word);
 const matchedKw=d=>activeKw().filter(w=>d.title.includes(w));
 
 let state={q:'',org:'',amt:'',kwOnly:false,sortKey:'dday',sortDir:1};
@@ -239,21 +227,12 @@ const orgSel=document.getElementById('orgFilter');
 
 function renderKw(){
   const box=document.getElementById('kwList');box.innerHTML='';
-  keywords.forEach((k,i)=>{
+  keywords.forEach(k=>{
     const el=document.createElement('span');
-    el.className='kw '+(k.on?'on':'off');
-    el.innerHTML=`<span class="lab">${k.word}</span><span class="x">✕</span>`;
-    el.querySelector('.lab').onclick=()=>{k.on=!k.on;renderKw();renderStats();render();};
-    el.querySelector('.x').onclick=e=>{e.stopPropagation();keywords.splice(i,1);renderKw();renderStats();render();};
+    el.className='kw';
+    el.innerHTML=`<span class="lab">${k.word}</span>`;
     box.appendChild(el);
   });
-  const add=document.createElement('span');add.className='kwadd';
-  add.innerHTML=`<input type="text" id="kwInput" placeholder="키워드 추가" maxlength="20"><button id="kwBtn">추가</button>`;
-  box.appendChild(add);
-  const inp=add.querySelector('#kwInput');
-  const go=()=>{const v=inp.value.trim();if(v&&!keywords.some(k=>k.word===v)){keywords.push({word:v,on:true});renderKw();renderStats();render();}else inp.value='';};
-  add.querySelector('#kwBtn').onclick=go;
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
 }
 
 function filtered(){
