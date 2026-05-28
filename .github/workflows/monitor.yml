@@ -1,1 +1,52 @@
+name: 나라장터 입찰 모니터링 (데일리)
 
+on:
+  schedule:
+    # UTC 0시 = 한국시간 오전 9시. 매일 1회 실행.
+    - cron: "0 0 * * *"
+  workflow_dispatch:        # 깃허브에서 수동 '지금 실행'도 가능
+
+permissions:
+  contents: write           # 갱신한 대시보드/기록을 저장소에 다시 저장
+  pages: write              # GitHub Pages 배포
+  id-token: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 내려받기
+        uses: actions/checkout@v4
+
+      - name: 파이썬 준비
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 라이브러리 설치
+        run: pip install requests
+
+      - name: 수집 · 메일 · 대시보드 생성
+        env:
+          SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PW: ${{ secrets.GMAIL_APP_PW }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: python monitor.py
+
+      - name: 대시보드를 Pages용으로 묶기
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: monitor
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages에 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
