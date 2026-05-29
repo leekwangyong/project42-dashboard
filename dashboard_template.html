@@ -125,7 +125,7 @@
     </div>
     <div class="sync">
       마지막 수집 <b id="syncTime">__SYNCTIME__</b><br>
-      자동 갱신 <b>1시간</b> 주기
+      자동 갱신 <b>하루 3회</b> (08:07 · 13:07 · 19:07)
     </div>
   </header>
 
@@ -143,7 +143,7 @@
     <div class="stat">
       <div class="label">마감 임박</div>
       <div class="num warn" id="stSoon">—</div>
-      <div class="sub">3일 이내 마감</div>
+      <div class="sub">오늘 ~ 3일 이내 마감</div>
     </div>
     <div class="stat">
       <div class="label">추적 중 전체</div>
@@ -276,7 +276,7 @@ function render(){
 function renderStats(){
   document.getElementById('stKw').textContent=data.filter(d=>matchedKw(d).length>0).length;
   document.getElementById('stNew').textContent=data.filter(d=>d.isNew).length;
-  document.getElementById('stSoon').textContent=data.filter(d=>d.dday<=3&&d.dday>0).length;
+  document.getElementById('stSoon').textContent=data.filter(d=>d.dday<=3&&d.dday>=0).length;
   document.getElementById('stTotal').textContent=data.length;
 }
 
