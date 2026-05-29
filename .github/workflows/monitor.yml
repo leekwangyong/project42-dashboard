@@ -3,7 +3,9 @@ name: 나라장터 입찰 모니터링 (데일리)
 on:
   schedule:
     # UTC 0시 = 한국시간 오전 9시. 매일 1회 실행.
-    - cron: "0 0 * * *"
+    - cron: "7 23 * * *"
+    - cron: "7 4 * * *"
+    - cron: "7 10 * * *"
   workflow_dispatch:        # 깃허브에서 수동 '지금 실행'도 가능
 
 permissions:
